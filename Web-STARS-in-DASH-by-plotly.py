@@ -61,7 +61,7 @@ years_by_step = list(map(str, list(range(1929, 2010, step))))
 # Calculating Moran'I for every column
 morans = []
 for i in cols_to_calculate:
-    aux = ps.Moran(df_map[i], W).I
+    aux = ps.Moran(df_map_pcr[i], W).I
     morans.append(aux)
 
 TimeSeries_Data =[
