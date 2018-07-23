@@ -20,6 +20,14 @@ csv_path = ps.examples.get_path('usjoin.csv')
 shp_path = ps.examples.get_path('us48.shp')
 
 usjoin = pd.read_csv(csv_path)
+us48_map = ps.pdio.read_files(shp_path)
+
+# us48_map has a left zero in states that have FIPS under 10
+#usjoin.STATE_FIPS
+#us48_map.STATE_FIPS
+us48_map.STATE_FIPS = us48_map.STATE_FIPS.astype(int)
+
+df_map_raw = us48_map.merge(usjoin, on='STATE_FIPS')
 
 # Columns to calculate PCR's and Moran'I as strings/objects
 years = list(range(1929, 2010))                  
@@ -40,21 +48,14 @@ usjoin[cols_to_calculate] = all_pcrs
 W = ps.queen_from_shapefile(shp_path)
 W.transform = 'r'
 
-us48_map = ps.pdio.read_files(shp_path)
-
-# us48_map has a left zero in states that have FIPS under 10
-#usjoin.STATE_FIPS
-#us48_map.STATE_FIPS
-us48_map.STATE_FIPS = us48_map.STATE_FIPS.astype(int)
-
-df_map = us48_map.merge(usjoin, on='STATE_FIPS') 
+df_map_pcr = us48_map.merge(usjoin, on='STATE_FIPS') 
 
 
 
 ############################################################            
 # Time series #
 ###############        
-step = 8
+step = 5
 years_by_step = list(map(str, list(range(1929, 2010, step))))         
 
 # Calculating Moran'I for every column
@@ -120,7 +121,7 @@ app.layout = html.Div(
         				),
                                 
                     dcc.RadioItems(
-                            id='well_status_selector',
+                            id='type_data_selector',
                             options=[
                                 {'label': 'Per Capita Relative Ratio (PCR)', 'value': 'pcr'},
                                 {'label': 'Raw Income Data', 'value': 'raw'}
@@ -139,9 +140,10 @@ app.layout = html.Div(
 								id='choropleth-graph'
 							),
 						
-							dcc.Graph(
+							dcc.Graph( # ?dcc.Graph to learn more about the properties
 								id='timeseries-graph',
-								figure = TimeSeries 
+								figure = TimeSeries,
+                            clear_on_unhover = 'True' # Sets the slider year when the mouse hover if off the graph
 							),	
                         
              				dcc.Graph(
@@ -189,9 +191,18 @@ app.layout = html.Div(
 
 @app.callback(
 	Output('choropleth-graph', 'figure'),
-	[Input('timeseries-graph','hoverData'),
+	[Input('type_data_selector', 'value'),
+    Input('timeseries-graph','hoverData'),
     Input('years-slider','value')])
-def update_map(year_hovered, year_selected_slider):
+def update_map(type_data, year_hovered, year_selected_slider):
+    
+    if type_data == 'raw': 
+        df_map = df_map_raw
+        title_map = 'US Income (U$)'
+    
+    else:
+        df_map = df_map_pcr
+        title_map = 'US Per Capita Ratio (PCR)'
     
     if year_hovered is None: 
         year = year_selected_slider
@@ -216,7 +227,7 @@ def update_map(year_hovered, year_selected_slider):
     							width = 2
     						) ),
     					colorbar = dict(
-    						title = "US Per Capita Ratio (PCR)")
+    						title = title_map)
     					) ]
     	
     Choropleth_Layout =  dict(
@@ -241,10 +252,17 @@ def update_map(year_hovered, year_selected_slider):
 
 @app.callback(
 	Output('scatter-graph', 'figure'),
-	[Input('timeseries-graph','hoverData'),
+	[Input('type_data_selector', 'value'),
+     Input('timeseries-graph','hoverData'),
      Input('years-slider','value'),
      Input('choropleth-graph','clickData')])
-def update_scatter(year_hovered, year_selected_slider, state_selected_choropleth):
+def update_scatter(type_data, year_hovered, year_selected_slider, state_selected_choropleth):
+    
+    if type_data == 'raw': 
+        df_map = df_map_raw
+    
+    else:
+        df_map = df_map_pcr
     
     if state_selected_choropleth is None: 
         state_selected = 'California'
@@ -300,9 +318,16 @@ def update_scatter(year_hovered, year_selected_slider, state_selected_choropleth
 
 @app.callback(
 	Output('boxplot-graph', 'figure'),
-	[Input('timeseries-graph','hoverData'),
+	[Input('type_data_selector', 'value'),
+     Input('timeseries-graph','hoverData'),
      Input('years-slider','value')])
-def update_boxplot(year_hovered, year_selected_slider):
+def update_boxplot(type_data, year_hovered, year_selected_slider):
+    
+    if type_data == 'raw': 
+        df_map = df_map_raw
+    
+    else:
+        df_map = df_map_pcr
     
     if year_hovered is None: 
         year = year_selected_slider
@@ -333,8 +358,15 @@ def update_boxplot(year_hovered, year_selected_slider):
 
 @app.callback(
 	Output('timepath-graph', 'figure'),
-	[Input('choropleth-graph','clickData')])
-def update_timepath(state_clicked):
+	[Input('type_data_selector', 'value'),
+     Input('choropleth-graph','clickData')])
+def update_timepath(type_data, state_clicked):
+    
+    if type_data == 'raw': 
+        df_map = df_map_raw
+    
+    else:
+        df_map = df_map_pcr
     
     if state_clicked is None: 
         chosen_state = 'California'
@@ -388,10 +420,17 @@ def update_timepath(state_clicked):
 
 @app.callback(
 	Output('density-graph', 'figure'),
-	[Input('initial_years_dropdown','value'),
+	[Input('type_data_selector', 'value'),
+     Input('initial_years_dropdown','value'),
      Input('final_years_dropdown','value'),
      Input('choropleth-graph','clickData')])
-def update_density(initial_year, final_year, state_clicked):
+def update_density(type_data, initial_year, final_year, state_clicked):
+    
+    if type_data == 'raw': 
+        df_map = df_map_raw
+    
+    else:
+        df_map = df_map_pcr
     
     pair_of_years = [initial_year, final_year]
     
