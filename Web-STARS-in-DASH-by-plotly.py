@@ -213,6 +213,8 @@ def update_map(type_data, year_hovered, year_selected_slider):
     scl = [[0.0, 'rgb(242,240,247)'],[0.2, 'rgb(218,218,235)'],[0.4, 'rgb(188,189,220)'],\
             [0.6, 'rgb(158,154,200)'],[0.8, 'rgb(117,107,177)'],[1.0, 'rgb(84,39,143)']]
 
+    scl2 = [[0.0, '#ffffff'], [1.0, '#FFFF00']]
+             
     Choropleth_Data = [ dict(
     					type='choropleth',
     					colorscale = scl,
@@ -230,8 +232,27 @@ def update_map(type_data, year_hovered, year_selected_slider):
     						title = title_map)
     					) ]
     	
+    highlighted_polygons = [ dict(
+					type='choropleth',
+					colorscale = scl2,
+					autocolorscale = False,
+					locations = df_map['STATE_ABBR'],
+                    z = [0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                    #opacity = 1,
+                    showscale = False,
+					locationmode = 'USA-states',
+					text = df_map['Name'],
+					marker = dict(
+						opacity = 0.5,
+						line = dict (
+							color = 'rgb(255,255,0)',
+							width = 0
+						) ),
+					) ]
+    
     Choropleth_Layout =  dict(
-                        	#title = 'Income of US by State in 1929<br>(Hover for breakdown)',
+                        	dragmode = "select",
+                           #title = 'Income of US by State in 1929<br>(Hover for breakdown)',
                         	geo = dict(
                             scope='usa',
                             projection=dict( type='albers usa' ),
@@ -241,7 +262,7 @@ def update_map(type_data, year_hovered, year_selected_slider):
                            title = 'Map data for US in {} <br> Clicking updates timepath and densities'.format(year)
                         )
     Choropleth = {
-    	'data': Choropleth_Data,
+    	'data': Choropleth_Data + highlighted_polygons,
     	'layout': Choropleth_Layout
     }
     return Choropleth
@@ -255,7 +276,7 @@ def update_map(type_data, year_hovered, year_selected_slider):
 	[Input('type_data_selector', 'value'),
      Input('timeseries-graph','hoverData'),
      Input('years-slider','value'),
-     Input('choropleth-graph','clickData')])
+     Input('choropleth-graph','selectedData')])
 def update_scatter(type_data, year_hovered, year_selected_slider, state_selected_choropleth):
     
     if type_data == 'raw': 
@@ -268,7 +289,7 @@ def update_scatter(type_data, year_hovered, year_selected_slider, state_selected
         state_selected = 'California'
     
     else:
-        state_selected = state_selected_choropleth['points'][0]['text']
+        state_selected = [i['text'] for i in state_selected_choropleth['points']]# state_selected_choropleth['points'][0]['text']
     
     if year_hovered is None: 
         year = year_selected_slider
@@ -280,7 +301,7 @@ def update_scatter(type_data, year_hovered, year_selected_slider, state_selected
     Var = df_map[str(year)]
     
     states = np.array(df_map['Name'])
-    colors = np.where(states == state_selected, '#0000FF', '#000000')
+    colors = np.where(np.isin(states, state_selected), '#0000FF', '#000000')
     
     b,a = np.polyfit(Var, VarLag, 1)
     
