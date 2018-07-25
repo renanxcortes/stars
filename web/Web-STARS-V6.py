@@ -60,7 +60,7 @@ df_map = us48_map.merge(usjoin, on='STATE_FIPS')
 ############################################################            
 # Time series #
 ###############        
-step = 8
+step = 9
 years_by_step = list(map(str, list(range(1929, 2010, step))))         
 
 # Calculating Moran'I for every column
