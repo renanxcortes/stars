@@ -151,11 +151,11 @@ app.layout = html.Div(
                             clear_on_unhover = 'True' # Sets the slider year when the mouse hover if off the graph
                             ),    
                         
-                             dcc.Graph(
-                                id='timepath-graph'
-                            ),
+                            # dcc.Graph(
+                            #    id='timepath-graph'
+                            #),
                                     
-                    ], className="six columns"),        
+                    ], className="four columns"),        
             html.Div([                
                         
                         dcc.Graph(
@@ -180,12 +180,19 @@ app.layout = html.Div(
                                 id='density-graph' 
                             ),
                                                
-                               dcc.Graph(
+                            #   dcc.Graph(
+                            #    id='boxplot-graph'
+                            #)            
+                        
+                    ], className="four columns"),        
+            html.Div([
+                            dcc.Graph(
+                                id='timepath-graph'
+                            ),
+                             dcc.Graph(
                                 id='boxplot-graph'
-                            )            
-                        
-                    ], className="six columns"),        
-                        
+                            ),           
+					 ], className="four columns"),    
         ], className="row")
     ], className='ten columns offset-by-one')
 )
@@ -279,12 +286,12 @@ def update_map(type_data, year_hovered, year_selected_slider, n, checkedValues):
     if type_data == 'raw': 
         df_map = df_map_raw
         rk_map = rk_map_raw
-        title_map = 'US Income (U$)'
+        title_map = '(Raw)'
     
     else:
         df_map = df_map_pcr
         rk_map = rk_map_pcr
-        title_map = 'US Per Capita Ratio (PCR)'
+        title_map = '(PCR)'
     
     if year_hovered is None: 
         year = year_selected_slider
@@ -321,7 +328,7 @@ def update_map(type_data, year_hovered, year_selected_slider, n, checkedValues):
                                 width = 1
                             ) ),
                         colorbar = dict(
-                            #title = "US Income per capita (US$)")
+                            thickness = 10,                          # default: 30 
                             title = title_map)
                         ) ]
         
@@ -397,29 +404,70 @@ def update_scatter(type_data, year_hovered, year_selected_slider, states_selecte
     else:
         year = year_hovered['points'][0]['x']
     
+    #df_map[str(year)] = [48,2,3,4,5,6,7,8,9,60,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,1]
+
+    print(df_map[str(year)])
     VarLag = ps.lag_spatial(W, df_map[str(year)])
     Var = df_map[str(year)]
-    
+
     states = np.array(df_map['Name'])
-    colors = np.where(np.isin(states, state_selected), '#0000FF', '#000000')
+    colors = np.where(np.isin(states, state_selected), '#FF0066', '#0066FF')
     
     b,a = np.polyfit(Var, VarLag, 1)
-    
+    line0 = { 'x':[min(Var), max(Var)], 'y': [a + i * b for i in [min(Var), max(Var)]] }
+
     Scatter_Data = [
                         {
                             'x': Var, 
                             'y': VarLag,
                             'mode': 'markers',
-                            'marker': {'size': 15,
+                            'marker': {'size': 10,
                                        'color': colors},
                             'name': str(year),
                         'text': df_map['Name']},
                         {
-                            'x': [min(Var), max(Var)], 
-                            'y': [a + i * b for i in [min(Var), max(Var)]],
-                            'mode': 'lines', 
+                            'x': line0['x'], 
+                            'y': line0['y'],
+                            'mode': 'lines',
+                            'line': {'color': '#009999'},
                             'name': 'Reg'}
                     ]
+    if (states_selected_choropleth is not None):
+        var = [v['z'] for v in states_selected_choropleth['points']]
+        varLag = [VarLag[v['pointIndex']] for v in states_selected_choropleth['points']]
+        b,a = np.polyfit(var, varLag, 1)
+        line1 = { 'x':[min(Var), max(Var)], 'y': [a + i * b for i in [min(Var), max(Var)]] }
+        line2 = { 'x':[min(var), max(var)], 'y': [a + i * b for i in [min(var), max(var)]] }
+
+        # recalculation line1 to fit scatter-graph area                                  # y = a * x + b
+        minVar = min(Var)
+        maxVar = max(Var)
+        aa = (line1['y'][1] - line1['y'][0]) / (line1['x'][1] - line1['x'][0])
+        bb = line1['y'][0] - aa * line1['x'][0]
+        if (line1['y'][0] > max(VarLag)): minVar = (line0['y'][1] - bb) / aa             # x = ( y - b ) / a
+        if (line1['y'][0] < min(VarLag)): minVar = (line0['y'][0] - bb) / aa             # x = ( y - b ) / a
+        if (line1['y'][1] > max(VarLag)): maxVar = (line0['y'][1] - bb) / aa             # x = ( y - b ) / a
+        if (line1['y'][1] < min(VarLag)): maxVar = (line0['y'][0] - bb) / aa             # x = ( y - b ) / a
+        line1 = { 'x':[minVar, maxVar], 'y': [a + i * b for i in [minVar, maxVar]] }
+
+        #print(var)
+        Scatter_Data.append(
+        	{
+        		'x': line1['x'], 
+                'y': line1['y'],
+                'mode': 'lines', 
+                'line': {'color': '#FF6600'},
+                #'line': {'color': '#0000FF'},
+                'name': 'Reg'}
+        )
+        Scatter_Data.append(
+        	{
+        		'x': line2['x'], 
+                'y': line2['y'],
+                'mode': 'lines', 
+                'line': {'color': '#FF0000'},
+                'name': 'Reg'}
+        )
     
     Scatter_Layout = {
                         'xaxis': {'title': 'Original Variable'},
@@ -490,29 +538,46 @@ def update_TimeSeries(year_hovered, year_selected_slider, minValue):
     Output('boxplot-graph', 'figure'),
     [Input('type_data_selector', 'value'),
      Input('timeseries-graph','hoverData'),
+     Input('choropleth-graph','selectedData'),
      Input('years-slider','value')])
-def update_boxplot(type_data, year_hovered, year_selected_slider):
+def update_boxplot(type_data, year_hovered, states_selected_choropleth, year_selected_slider):
     
     if type_data == 'raw': 
         df_map = df_map_raw
     
     else:
         df_map = df_map_pcr
+
+    selected = []
+    if ((states_selected_choropleth is None)):
+        state_selected = 'California'
+    else:
+        state_selected = [i['text'] for i in states_selected_choropleth['points']]
+        selected = [i['pointIndex'] for i in states_selected_choropleth['points']]
     
     if year_hovered is None: 
         year = year_selected_slider
     
     else:
         year = year_hovered['points'][0]['x']
+
+    #states = np.array(df_map['Name'])
+    #colors = np.where(np.isin(states, state_selected), '#FF0066', '#0066FF')
         
     trace0 = go.Box(
         y = df_map[str(year)],
         name = 'Boxplot of the variable',
-        boxpoints='all', # Show the underlying point of the boxplot
-        jitter=0.15, # Degree of fuzziness
-        pointpos=0 # Adjust horizontal location of point
+        boxpoints='all',                                             # Show the underlying point of the boxplot
+        jitter=0.15,                                                 # Degree of fuzziness
+        pointpos=0,                                                  # Adjust horizontal location of point
+        #marker = dict(color = '#FF0066'),
+        line = dict(color = '#444'),
+        selected = dict(marker = dict(color = '#FF0066')),
+        unselected = dict(marker = dict(color = '#0066FF', opacity = 1.0)),
+        selectedpoints = selected,
     )
     BoxPlot_Data = [trace0]
+    #print(BoxPlot_Data)
     
     BoxPlot = {
                 'data': BoxPlot_Data,
