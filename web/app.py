@@ -775,6 +775,7 @@ def update_scatter(type_data, year_hovered, year_selected_slider,
         state_selected = [i['text'] for i in states_selected_choropleth['points']]# state_selected_choropleth['points'][0]['text']
         title_graph = 'Multiple States'
     
+    W.transform = 'r'
     VarLag = ps.lag_spatial(W, df_map[str(year)])
     Var = df_map[str(year)]
 
@@ -1022,6 +1023,7 @@ def update_timepath(type_data, state_clicked_choropleth, year_hovered, year_sele
     else:
         year = year_hovered['points'][0]['x']
     
+    W.transform = 'r'
     def calculate_lag_value(x):
         return ps.lag_spatial(W, x)
     
