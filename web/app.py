@@ -320,7 +320,11 @@ app.layout = html.Div(
                                 id='final_years_dropdown',
                                 options=years_options,
                                 value=str(last_year)
-                            )], className="row"),
+                            )], className="row",
+                            style = {
+                            'font-size': '125%', 
+                            'font-weight': 'bold', 
+                            'textAlign': 'center'}),
                                            
                         
                     ], className="four columns"),        
@@ -348,7 +352,10 @@ app.layout = html.Div(
                             value='1'
                         )], style = {'margin-left':600,
                                      'margin-right':600,
-                                     'margin-top':10}),
+                                     'margin-top':10,
+                                     'font-size': '125%', 
+                                     'font-weight': 'bold', 
+                                     'textAlign': 'center'}),
             
             html.Div([
                 html.P('Year Highlighted:', style={'margin-top': '25', 'font-size': '150%', 'font-weight': 'bold'}), 
@@ -399,36 +406,52 @@ app.layout = html.Div(
                 dcc.Tab(label='Directional LISA (Rose)', style={'font-weight': 'bold', 'font-size': '120%'}, children=[
                         
                 html.Div([
+                            
+                        html.P('Pair of years for Local Indicator for Spatial Association (LISA):'),
                         
-                        html.P('Pair of years for Local Indicator for Spatial Association (LISA):', style = {'font-size': '125%', 
-                                                                           'margin-top':25,
-                                                                           'margin-bottom':25,
-                                                                           'font-weight': 'bold', 
-                                                                           'margin-left':500, 
-                                                                           'margin-right':500}),
-                
+                        dcc.Dropdown(
+                                id='initial_years_dropdown_rose',
+                                options=years_options,
+                                value=str(first_year)
+                            ),
+                        dcc.Dropdown(
+                                id='final_years_dropdown_rose',
+                                options=years_options,
+                                value=str(last_year)
+                            )], className="row", 
+                            style = {'font-size': '125%', 
+                                        'margin-top':25,
+                                        'margin-bottom':25,
+                                        'font-weight': 'bold', 
+                                        'margin-left':550, 
+                                        'margin-right':550,
+                                        'textAlign': 'center'}),
+                        
                 html.Div([
-                        dcc.RangeSlider(
-                        id='rose-range-slider',
-                        min = first_year,
-                        max = last_year,
-                        step = 1,
-                        marks = {str(year): str(year) for year in years_by_step},
-                        value = [first_year, last_year]                        
-                                )], style = {'margin-bottom':60, 'margin-left':50, 'margin-right':50}),
                         
-                html.Div([
-                        
-                html.P('Circular sectors in diagram (k):', style = {'font-size': '100%', 'margin-top':25, 'font-weight': 'bold'}),
                 
-                dcc.Dropdown(
-                                id='rose-k',
-                                options = [{'label': i, 'value': i} for i in list(range(1, 51))],
-                                value = 30
-                                )], style = {'margin-left':550,
-                                         'margin-right':550,
-                                         'margin-bottom':25,
-                                         'margin-top':25}),
+#                html.Div([
+#                        dcc.RangeSlider(
+#                        id='rose-range-slider',
+#                        min = first_year,
+#                        max = last_year,
+#                        step = 1,
+#                        marks = {str(year): str(year) for year in years_by_step},
+#                        value = [first_year, last_year]                        
+#                                )], style = {'margin-bottom':60, 'margin-left':50, 'margin-right':50}),
+                        
+#                html.Div([
+#                        
+#                #html.P('Circular sectors in diagram (k):', style = {'font-size': '100%', 'margin-top':25, 'font-weight': 'bold'}),
+#                
+#                dcc.Dropdown(
+#                                id='rose-k',
+#                                options = [{'label': i, 'value': i} for i in list(range(1, 51))],
+#                                value = 30
+#                                )], style = {'margin-left':550,
+#                                         'margin-right':550,
+#                                         'margin-bottom':25,
+#                                         'margin-top':25}),
             
             
                 html.Div([
@@ -488,22 +511,47 @@ app.layout = html.Div(
                         
                 html.Div([
                         
-                        html.P('Pair of years for Local Indicator for Mobility Association (LIMA):', style = {'font-size': '125%', 
-                                                                           'margin-top':25,
-                                                                           'margin-bottom':25,
-                                                                           'font-weight': 'bold', 
-                                                                           'margin-left':500, 
-                                                                           'margin-right':500}),
+                        html.P('Pair of years for Local Indicator for Mobility Association (LIMA):', 
+                               style = {'font-size': '125%', 
+                                        'margin-top':25,
+                                        'margin-bottom':25,
+                                        'font-weight': 'bold', 
+                                        'margin-left':500, 
+                                        'margin-right':500,
+                                        'textAlign':'center'}),
                 
                 html.Div([
-                        dcc.RangeSlider(
-                        id='rank-range-slider',
-                        min = first_year,
-                        max = last_year,
-                        step = 1,
-                        marks = {str(year): str(year) for year in years_by_step},
-                        value = [first_year, last_year]                        
-                                )], style = {'margin-bottom':60}),
+                        
+                        dcc.Dropdown(
+                                id='initial_years_dropdown_lima',
+                                options=years_options,
+                                value=str(first_year)
+                            ),
+                        
+                        dcc.Dropdown(
+                                id='final_years_dropdown_lima',
+                                options=years_options,
+                                value=str(last_year)
+                            ),
+                        
+#                        dcc.RangeSlider(
+#                        id='rank-range-slider',
+#                        min = first_year,
+#                        max = last_year,
+#                        step = 1,
+#                        marks = {str(year): str(year) for year in years_by_step},
+#                        value = [first_year, last_year]                        
+#                                )
+                        
+                        ], 
+                        
+                        style = {'font-size': '125%', 
+                                        'margin-top':25,
+                                        'margin-bottom':25,
+                                        'font-weight': 'bold', 
+                                        'margin-left':500, 
+                                        'margin-right':500,
+                                        'textAlign': 'center'}),
                         
                  html.Div([       
                         dcc.Graph(
@@ -1035,19 +1083,20 @@ def update_timepath(type_data, state_clicked_choropleth, year_hovered, year_sele
     Var = df_map[cols_to_calculate].iloc[state_row_index,:]
     
     TimePath_Data = [
-                        {
+            {
+                            'x': Var, 
+                            'y': VarLag,
+                            'mode': 'lines', 
+                            'name': 'Path',
+                        'hoverinfo': 'none'},            
+            {
                             'x': Var[[theIDX]], 
                             'y': VarLag[[theIDX]],
                             'mode': 'markers',
                             'marker': {'size': 12},
                             'name': '',
-                        'text': str(year)},
-                        {
-                            'x': Var, 
-                            'y': VarLag,
-                            'mode': 'lines', 
-                            'name': 'Path',
-                        'hoverinfo': 'none'}
+                        'text': str(year)}
+                        
                     ]
     
     TimePath_Layout = {
@@ -1445,14 +1494,17 @@ def update_markov_spatial_graph(markov_class_value, markov_spatial_value):
 
 @app.callback(
     Output('lima-neighborhood-graph', 'figure'),
-    [Input('rank-range-slider','value')]
+    [Input('initial_years_dropdown_lima','value'),
+     Input('final_years_dropdown_lima','value')
+     #Input('rank-range-slider','value')
+     ]
 )
-def update_lima_neighborhood(pair_years_range_slider):
+def update_lima_neighborhood(initial_year, final_year):
     
     us_tidy_map = us_tidy[us_tidy.Year == str(first_year)]
     
-    y_initial = us_tidy[us_tidy.Year == str(pair_years_range_slider[0])].PCR
-    y_final   = us_tidy[us_tidy.Year == str(pair_years_range_slider[1])].PCR
+    y_initial = us_tidy[us_tidy.Year == str(initial_year)].PCR
+    y_final   = us_tidy[us_tidy.Year == str(final_year)].PCR
     
     global_spatial_tau = giddy.rank.SpatialTau(np.array(y_initial), np.array(y_final), W, 999)
     
@@ -1461,7 +1513,7 @@ def update_lima_neighborhood(pair_years_range_slider):
     
     LIMA_Layout = dict(
         projection = dict(type='albers usa'),
-        title = '<b>Neighbor set LIMA between {} and {} (Spatial Kendall\'s Tau: {})</b>'.format(str(pair_years_range_slider[0]),str(pair_years_range_slider[1]), str(round(global_spatial_tau.tau_spatial, 2))),
+        title = '<b>Neighbor set LIMA between {} and {} (Spatial Kendall\'s Tau: {})</b>'.format(str(initial_year),str(final_year), str(round(global_spatial_tau.tau_spatial, 2))),
         titlefont = {"size": 24,
                      "family": "Courier New"},
         hovermode = 'closest',
@@ -1556,17 +1608,20 @@ def update_lima_neighborhood(pair_years_range_slider):
 
 @app.callback(
     Output('rose-graph', 'figure'),
-    [Input('rose-range-slider','value'),
-     Input('rose-k','value')]
+    [Input('initial_years_dropdown_rose','value'),
+     Input('final_years_dropdown_rose','value')#,
+     #Input('rose-range-slider','value'),
+     #Input('rose-k','value')
+     ]
 )
-def update_rose(rose_pair_years_range_slider, rose_k):
+def update_rose(initial_year, final_year):
     
-    y_initial = us_tidy[us_tidy.Year == str(rose_pair_years_range_slider[0])].PCR
-    y_final   = us_tidy[us_tidy.Year == str(rose_pair_years_range_slider[1])].PCR
+    y_initial = us_tidy[us_tidy.Year == str(initial_year)].PCR
+    y_final   = us_tidy[us_tidy.Year == str(final_year)].PCR
     
     Y = np.swapaxes(np.array([y_initial, y_final]), 0, 1)
 
-    r4 = giddy.directional.Rose(Y, W, k = rose_k)
+    r4 = giddy.directional.Rose(Y, W, k = 5)
     r_aux = list(map(math.degrees, r4.theta.tolist()))
     
     Rose_Data = [dict(
@@ -1581,7 +1636,7 @@ def update_rose(rose_pair_years_range_slider, rose_k):
         )]
 
     Rose_Layout = dict(
-        title = '<b>Rose for {} and {} (k = {})</b>'.format(rose_pair_years_range_slider[0], rose_pair_years_range_slider[1], rose_k),
+        title = '<b>Rose for {} and {}</b>'.format(initial_year, final_year),
         showlegend = False,
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(0,0,0,0)',
